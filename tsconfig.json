@@ -6,6 +6,8 @@
     "types": ["vite/client"],
     "allowArbitraryExtensions": true,
     "strict": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
     "skipLibCheck": true,
 
     /* Bundler mode */
