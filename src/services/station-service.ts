@@ -25,7 +25,8 @@ export class StationService {
   }
 
   static async getStation(id: string): Promise<Station> {
-    const response = await fetch(`${API_BASE_URL}/stations/${id}`);
+    const stationId = encodeURIComponent(id);
+    const response = await fetch(`${API_BASE_URL}/stations/${stationId}`);
 
     return parseJsonResponse<Station>(
       response,
@@ -37,8 +38,9 @@ export class StationService {
     stationId: string,
     signal?: AbortSignal,
   ): Promise<Measurement> {
+    const encodedStationId = encodeURIComponent(stationId);
     const response = await fetch(
-      `${API_BASE_URL}/stations/${stationId}/measurements/latest`,
+      `${API_BASE_URL}/stations/${encodedStationId}/measurements/latest`,
       { signal },
     );
 
@@ -54,7 +56,10 @@ export class StationService {
     to?: string,
     signal?: AbortSignal,
   ): Promise<Measurement[]> {
-    const url = new URL(`${API_BASE_URL}/stations/${stationId}/measurements`);
+    const encodedStationId = encodeURIComponent(stationId);
+    const url = new URL(
+      `${API_BASE_URL}/stations/${encodedStationId}/measurements`,
+    );
     const queryParams = new URLSearchParams();
 
     if (from) {

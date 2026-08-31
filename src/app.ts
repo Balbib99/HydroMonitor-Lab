@@ -1,12 +1,23 @@
 import { LitElement, css, html } from 'lit';
 import { state } from 'lit/decorators.js';
+import './components/alarm-panel';
+import './components/connection-status';
 import './components/measurement-chart';
 import './components/sensor-card';
 import './components/station-selector';
+import { alarmRules } from './config/alarm-rules';
+import { RealtimeService } from './services/realtime-service';
 import { StationService } from './services/station-service';
+import { evaluateMeasurement } from './utils/alarm-engine';
+import { mergeRecentAlarms } from './utils/alarm-utils';
 import type { StationSelectedDetail } from './components/station-selector';
+import type { Alarm } from './models/alarm';
+import type { ConnectionStatus } from './models/connection';
 import type { Measurement } from './models/measurement';
 import type { Station } from './models/station';
+
+const MAX_POINTS = 200;
+const MAX_ALARMS = 20;
 
 type LoadResult<T> =
   | {
@@ -49,9 +60,17 @@ export class HydroApp extends LitElement {
   @state()
   private historyError = '';
 
+  @state()
+  private connectionStatus: ConnectionStatus = 'disconnected';
+
+  @state()
+  private alarms: Alarm[] = [];
+
   private stationController?: AbortController;
 
   private stationDataController?: AbortController;
+
+  private disconnectRealtime?: () => void;
 
   static styles = css`
     :host {
@@ -91,7 +110,8 @@ export class HydroApp extends LitElement {
 
     .station-summary {
       display: grid;
-      gap: 0.25rem;
+      grid-template-columns: 1fr auto;
+      gap: 0.25rem 1rem;
       margin-bottom: 1.5rem;
       padding-bottom: 1.5rem;
       border-bottom: 1px solid #d8e2e7;
@@ -106,11 +126,13 @@ export class HydroApp extends LitElement {
     }
 
     .station-river {
+      grid-column: 1;
       margin: 0;
       color: #536471;
     }
 
     .station-status {
+      grid-column: 1;
       width: fit-content;
       margin-top: 0.5rem;
       padding: 0.35rem 0.6rem;
@@ -130,6 +152,12 @@ export class HydroApp extends LitElement {
     .station-status.offline {
       color: #5d6470;
       background: #edf1f4;
+    }
+
+    connection-status {
+      grid-column: 2;
+      grid-row: 1 / span 3;
+      align-self: start;
     }
 
     .sensor-grid {
@@ -165,6 +193,16 @@ export class HydroApp extends LitElement {
       h1 {
         font-size: 2rem;
       }
+
+      .station-summary {
+        grid-template-columns: 1fr;
+      }
+
+      connection-status {
+        grid-column: 1;
+        grid-row: auto;
+        margin-top: 0.5rem;
+      }
     }
   `;
 
@@ -176,12 +214,16 @@ export class HydroApp extends LitElement {
   disconnectedCallback() {
     this.stationController?.abort();
     this.stationDataController?.abort();
+    this.closeRealtimeConnection();
     super.disconnectedCallback();
   }
 
   render() {
     const selectedStation = this.stations.find(
       (station) => station.id === this.selectedStationId,
+    );
+    const selectedStationAlarms = this.alarms.filter(
+      (alarm) => alarm.stationId === this.selectedStationId,
     );
 
     return html`
@@ -191,12 +233,15 @@ export class HydroApp extends LitElement {
           <p>HydroMet Monitoring Dashboard</p>
         </header>
 
-        ${this.renderStationState(selectedStation)}
+        ${this.renderStationState(selectedStation, selectedStationAlarms)}
       </main>
     `;
   }
 
-  private renderStationState(selectedStation: Station | undefined) {
+  private renderStationState(
+    selectedStation: Station | undefined,
+    selectedStationAlarms: Alarm[],
+  ) {
     if (this.loadingStations) {
       return this.renderMessage('Loading stations...');
     }
@@ -219,14 +264,17 @@ export class HydroApp extends LitElement {
       </section>
 
       ${selectedStation
-        ? this.renderDashboard(selectedStation)
+        ? this.renderDashboard(selectedStation, selectedStationAlarms)
         : this.renderMessage(
             'No station data is available for the selected station.',
           )}
     `;
   }
 
-  private renderDashboard(selectedStation: Station) {
+  private renderDashboard(
+    selectedStation: Station,
+    selectedStationAlarms: Alarm[],
+  ) {
     return html`
       <section class="station-summary" aria-label="Selected station">
         <h2 class="station-name">${selectedStation.name}</h2>
@@ -234,9 +282,14 @@ export class HydroApp extends LitElement {
         <span class=${`station-status ${selectedStation.status}`}>
           Status: ${selectedStation.status.toUpperCase()}
         </span>
+        <connection-status
+          .status=${this.connectionStatus}
+        ></connection-status>
       </section>
 
-      ${this.renderMeasurementState()} ${this.renderHistoryState()}
+      ${this.renderMeasurementState()}
+      <alarm-panel .alarms=${selectedStationAlarms}></alarm-panel>
+      ${this.renderHistoryState()}
     `;
   }
 
@@ -351,6 +404,8 @@ export class HydroApp extends LitElement {
       this.selectedStationId = '';
       this.currentMeasurement = undefined;
       this.measurements = [];
+      this.alarms = [];
+      this.closeRealtimeConnection();
     } finally {
       if (!signal.aborted) {
         this.loadingStations = false;
@@ -359,6 +414,7 @@ export class HydroApp extends LitElement {
   }
 
   private async loadStationData(stationId: string) {
+    this.closeRealtimeConnection();
     this.stationDataController?.abort();
     this.stationDataController = new AbortController();
     const { signal } = this.stationDataController;
@@ -398,12 +454,13 @@ export class HydroApp extends LitElement {
       historyPromise,
     ]);
 
-    if (signal.aborted) {
+    if (signal.aborted || stationId !== this.selectedStationId) {
       return;
     }
 
     if (latestResult.status === 'success') {
       this.currentMeasurement = latestResult.data;
+      this.addAlarms(evaluateMeasurement(latestResult.data, alarmRules));
     } else if (!this.isAbortError(latestResult.error)) {
       console.error(latestResult.error);
       this.measurementError = 'Error loading measurement';
@@ -418,6 +475,7 @@ export class HydroApp extends LitElement {
 
     this.loadingMeasurement = false;
     this.loadingHistory = false;
+    this.openRealtimeConnection(stationId);
   }
 
   private handleStationSelected(event: CustomEvent<StationSelectedDetail>) {
@@ -433,6 +491,71 @@ export class HydroApp extends LitElement {
       from: fromDate.toISOString(),
       to: toDate.toISOString(),
     };
+  }
+
+  private openRealtimeConnection(stationId: string) {
+    this.connectionStatus = 'connecting';
+    let closedManually = false;
+
+    const disconnect = RealtimeService.connectToStation(stationId, {
+      onMeasurement: (measurement) => {
+        if (measurement.stationId !== this.selectedStationId) {
+          return;
+        }
+
+        this.currentMeasurement = measurement;
+        this.addMeasurement(measurement);
+        this.addAlarms(evaluateMeasurement(measurement, alarmRules));
+      },
+      onOpen: () => {
+        this.connectionStatus = 'connected';
+      },
+      onError: (error) => {
+        if (closedManually) {
+          return;
+        }
+
+        console.warn('Realtime connection error', error);
+        this.connectionStatus = 'reconnecting';
+      },
+    });
+
+    this.disconnectRealtime = () => {
+      closedManually = true;
+      disconnect();
+      this.connectionStatus = 'disconnected';
+    };
+  }
+
+  private closeRealtimeConnection() {
+    this.disconnectRealtime?.();
+    this.disconnectRealtime = undefined;
+    this.connectionStatus = 'disconnected';
+  }
+
+  private addMeasurement(measurement: Measurement) {
+    if (this.isDuplicateMeasurement(measurement)) {
+      return;
+    }
+
+    const updatedMeasurements = [...this.measurements, measurement];
+    this.measurements = updatedMeasurements.slice(-MAX_POINTS);
+  }
+
+  private isDuplicateMeasurement(measurement: Measurement) {
+    return this.measurements.some(
+      (existingMeasurement) =>
+        existingMeasurement.stationId === measurement.stationId &&
+        existingMeasurement.timestamp === measurement.timestamp,
+    );
+  }
+
+  private addAlarms(newAlarms: Alarm[]) {
+    if (newAlarms.length === 0) {
+      return;
+    }
+
+    this.alarms = mergeRecentAlarms(this.alarms, newAlarms, MAX_ALARMS);
   }
 
   private isAbortError(error: unknown) {
