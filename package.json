@@ -8,12 +8,18 @@
     "build": "tsc && vite build",
     "mock-server": "tsx mock-server/server.ts",
     "dev:all": "concurrently \"npm run dev\" \"npm run mock-server\"",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "preview": "vite preview"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "concurrently": "^10.0.5",
+    "jest": "^30.5.0",
+    "ts-jest": "^29.4.12",
     "tsx": "^4.23.13",
     "typescript": "~6.0.2",
     "vite": "^8.2.2"
