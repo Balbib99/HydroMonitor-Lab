@@ -2,13 +2,36 @@ import { LitElement, css, html } from 'lit';
 import { state } from 'lit/decorators.js';
 import './components/sensor-card';
 import './components/station-selector';
-import { mockMeasurements } from './data/mock-measurements';
-import { mockStations } from './data/mock-stations';
+import { StationService } from './services/station-service';
 import type { StationSelectedDetail } from './components/station-selector';
+import type { Measurement } from './models/measurement';
+import type { Station } from './models/station';
 
 export class HydroApp extends LitElement {
   @state()
-  private selectedStationId = 'VA-001';
+  private stations: Station[] = [];
+
+  @state()
+  private selectedStationId = '';
+
+  @state()
+  private currentMeasurement?: Measurement;
+
+  @state()
+  private loadingStations = false;
+
+  @state()
+  private loadingMeasurement = false;
+
+  @state()
+  private stationError = '';
+
+  @state()
+  private measurementError = '';
+
+  private stationController?: AbortController;
+
+  private measurementController?: AbortController;
 
   static styles = css`
     :host {
@@ -95,13 +118,19 @@ export class HydroApp extends LitElement {
       gap: 1rem;
     }
 
-    .empty-state {
+    .message {
       padding: 1.5rem;
       border: 1px solid #d8e2e7;
       border-radius: 0.5rem;
       background: #ffffff;
       color: #536471;
       text-align: center;
+    }
+
+    .message.error {
+      border-color: #f0b4a8;
+      color: #8a2f18;
+      background: #fff1ed;
     }
 
     @media (max-width: 42rem) {
@@ -115,12 +144,20 @@ export class HydroApp extends LitElement {
     }
   `;
 
+  connectedCallback() {
+    super.connectedCallback();
+    void this.loadStations();
+  }
+
+  disconnectedCallback() {
+    this.stationController?.abort();
+    this.measurementController?.abort();
+    super.disconnectedCallback();
+  }
+
   render() {
-    const selectedStation = mockStations.find(
+    const selectedStation = this.stations.find(
       (station) => station.id === this.selectedStationId,
-    );
-    const currentMeasurement = mockMeasurements.find(
-      (measurement) => measurement.stationId === this.selectedStationId,
     );
 
     return html`
@@ -130,25 +167,40 @@ export class HydroApp extends LitElement {
           <p>HydroMet Monitoring Dashboard</p>
         </header>
 
-        <section class="dashboard-controls">
-          <station-selector
-            .stations=${mockStations}
-            .selectedStationId=${this.selectedStationId}
-            @station-selected=${this.handleStationSelected}
-          ></station-selector>
-        </section>
-
-        ${selectedStation && currentMeasurement
-          ? this.renderDashboard(selectedStation, currentMeasurement)
-          : this.renderEmptyState()}
+        ${this.renderStationState(selectedStation)}
       </main>
     `;
   }
 
-  private renderDashboard(
-    selectedStation: (typeof mockStations)[number],
-    currentMeasurement: (typeof mockMeasurements)[number],
-  ) {
+  private renderStationState(selectedStation: Station | undefined) {
+    if (this.loadingStations) {
+      return this.renderMessage('Loading stations...');
+    }
+
+    if (this.stationError) {
+      return this.renderMessage('Error loading stations', true);
+    }
+
+    if (this.stations.length === 0) {
+      return this.renderMessage('No stations available');
+    }
+
+    return html`
+      <section class="dashboard-controls">
+        <station-selector
+          .stations=${this.stations}
+          .selectedStationId=${this.selectedStationId}
+          @station-selected=${this.handleStationSelected}
+        ></station-selector>
+      </section>
+
+      ${selectedStation ? this.renderDashboard(selectedStation) : this.renderMessage(
+        'No station data is available for the selected station.',
+      )}
+    `;
+  }
+
+  private renderDashboard(selectedStation: Station) {
     return html`
       <section class="station-summary" aria-label="Selected station">
         <h2 class="station-name">${selectedStation.name}</h2>
@@ -158,43 +210,126 @@ export class HydroApp extends LitElement {
         </span>
       </section>
 
+      ${this.renderMeasurementState()}
+    `;
+  }
+
+  private renderMeasurementState() {
+    if (this.loadingMeasurement) {
+      return this.renderMessage('Loading measurement...');
+    }
+
+    if (this.measurementError) {
+      return this.renderMessage('Error loading measurement', true);
+    }
+
+    if (!this.currentMeasurement) {
+      return this.renderMessage('No measurement available');
+    }
+
+    return html`
       <section class="sensor-grid" aria-label="Sensor overview">
         <sensor-card
           label="Temperature"
-          .value=${currentMeasurement.temperature}
+          .value=${this.currentMeasurement.temperature}
           .unit=${'\u00b0C'}
           .warningThreshold=${35}
         ></sensor-card>
         <sensor-card
           label="Humidity"
-          .value=${currentMeasurement.humidity}
+          .value=${this.currentMeasurement.humidity}
           unit="%"
         ></sensor-card>
         <sensor-card
           label="Water Level"
-          .value=${currentMeasurement.waterLevel}
+          .value=${this.currentMeasurement.waterLevel}
           unit="m"
           .warningThreshold=${3.5}
         ></sensor-card>
         <sensor-card
           label="Flow Rate"
-          .value=${currentMeasurement.flowRate}
+          .value=${this.currentMeasurement.flowRate}
           .unit=${'m\u00b3/s'}
         ></sensor-card>
       </section>
     `;
   }
 
-  private renderEmptyState() {
-    return html`
-      <p class="empty-state">
-        No station data is available for the selected station.
-      </p>
-    `;
+  private renderMessage(message: string, isError = false) {
+    return html`<p class=${isError ? 'message error' : 'message'}>${message}</p>`;
+  }
+
+  private async loadStations() {
+    this.stationController?.abort();
+    this.stationController = new AbortController();
+    const { signal } = this.stationController;
+
+    this.loadingStations = true;
+    this.stationError = '';
+
+    try {
+      const stations = await StationService.getStations(signal);
+
+      this.stations = stations;
+      this.selectedStationId = stations[0]?.id ?? '';
+
+      if (this.selectedStationId) {
+        void this.loadLatestMeasurement(this.selectedStationId);
+      }
+    } catch (error) {
+      if (this.isAbortError(error)) {
+        return;
+      }
+
+      console.error(error);
+      this.stationError = 'Error loading stations';
+      this.stations = [];
+      this.selectedStationId = '';
+      this.currentMeasurement = undefined;
+    } finally {
+      if (!signal.aborted) {
+        this.loadingStations = false;
+      }
+    }
+  }
+
+  private async loadLatestMeasurement(stationId: string) {
+    this.measurementController?.abort();
+    this.measurementController = new AbortController();
+    const { signal } = this.measurementController;
+
+    this.loadingMeasurement = true;
+    this.measurementError = '';
+    this.currentMeasurement = undefined;
+
+    try {
+      const measurement = await StationService.getLatestMeasurement(
+        stationId,
+        signal,
+      );
+
+      this.currentMeasurement = measurement;
+    } catch (error) {
+      if (this.isAbortError(error)) {
+        return;
+      }
+
+      console.error(error);
+      this.measurementError = 'Error loading measurement';
+    } finally {
+      if (!signal.aborted) {
+        this.loadingMeasurement = false;
+      }
+    }
   }
 
   private handleStationSelected(event: CustomEvent<StationSelectedDetail>) {
     this.selectedStationId = event.detail.stationId;
+    void this.loadLatestMeasurement(event.detail.stationId);
+  }
+
+  private isAbortError(error: unknown) {
+    return error instanceof DOMException && error.name === 'AbortError';
   }
 }
 
