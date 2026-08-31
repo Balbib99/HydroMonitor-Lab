@@ -47,4 +47,31 @@ export class StationService {
       `Unable to load latest measurement for station ${stationId}`,
     );
   }
+
+  static async getMeasurements(
+    stationId: string,
+    from?: string,
+    to?: string,
+    signal?: AbortSignal,
+  ): Promise<Measurement[]> {
+    const url = new URL(`${API_BASE_URL}/stations/${stationId}/measurements`);
+    const queryParams = new URLSearchParams();
+
+    if (from) {
+      queryParams.set('from', from);
+    }
+
+    if (to) {
+      queryParams.set('to', to);
+    }
+
+    url.search = queryParams.toString();
+
+    const response = await fetch(url, { signal });
+
+    return parseJsonResponse<Measurement[]>(
+      response,
+      `Unable to load measurements for station ${stationId}`,
+    );
+  }
 }

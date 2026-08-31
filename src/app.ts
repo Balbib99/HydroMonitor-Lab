@@ -1,11 +1,22 @@
 import { LitElement, css, html } from 'lit';
 import { state } from 'lit/decorators.js';
+import './components/measurement-chart';
 import './components/sensor-card';
 import './components/station-selector';
 import { StationService } from './services/station-service';
 import type { StationSelectedDetail } from './components/station-selector';
 import type { Measurement } from './models/measurement';
 import type { Station } from './models/station';
+
+type LoadResult<T> =
+  | {
+      status: 'success';
+      data: T;
+    }
+  | {
+      status: 'error';
+      error: unknown;
+    };
 
 export class HydroApp extends LitElement {
   @state()
@@ -18,10 +29,16 @@ export class HydroApp extends LitElement {
   private currentMeasurement?: Measurement;
 
   @state()
+  private measurements: Measurement[] = [];
+
+  @state()
   private loadingStations = false;
 
   @state()
   private loadingMeasurement = false;
+
+  @state()
+  private loadingHistory = false;
 
   @state()
   private stationError = '';
@@ -29,9 +46,12 @@ export class HydroApp extends LitElement {
   @state()
   private measurementError = '';
 
+  @state()
+  private historyError = '';
+
   private stationController?: AbortController;
 
-  private measurementController?: AbortController;
+  private stationDataController?: AbortController;
 
   static styles = css`
     :host {
@@ -118,6 +138,10 @@ export class HydroApp extends LitElement {
       gap: 1rem;
     }
 
+    .history-section {
+      margin-top: 1.5rem;
+    }
+
     .message {
       padding: 1.5rem;
       border: 1px solid #d8e2e7;
@@ -151,7 +175,7 @@ export class HydroApp extends LitElement {
 
   disconnectedCallback() {
     this.stationController?.abort();
-    this.measurementController?.abort();
+    this.stationDataController?.abort();
     super.disconnectedCallback();
   }
 
@@ -194,9 +218,11 @@ export class HydroApp extends LitElement {
         ></station-selector>
       </section>
 
-      ${selectedStation ? this.renderDashboard(selectedStation) : this.renderMessage(
-        'No station data is available for the selected station.',
-      )}
+      ${selectedStation
+        ? this.renderDashboard(selectedStation)
+        : this.renderMessage(
+            'No station data is available for the selected station.',
+          )}
     `;
   }
 
@@ -210,7 +236,7 @@ export class HydroApp extends LitElement {
         </span>
       </section>
 
-      ${this.renderMeasurementState()}
+      ${this.renderMeasurementState()} ${this.renderHistoryState()}
     `;
   }
 
@@ -255,6 +281,44 @@ export class HydroApp extends LitElement {
     `;
   }
 
+  private renderHistoryState() {
+    if (this.loadingHistory) {
+      return html`
+        <section class="history-section">
+          ${this.renderMessage('Loading historical data...')}
+        </section>
+      `;
+    }
+
+    if (this.historyError) {
+      return html`
+        <section class="history-section">
+          ${this.renderMessage('Error loading historical data', true)}
+        </section>
+      `;
+    }
+
+    if (this.measurements.length === 0) {
+      return html`
+        <section class="history-section">
+          ${this.renderMessage('No historical data available')}
+        </section>
+      `;
+    }
+
+    return html`
+      <section class="history-section" aria-label="Historical measurements">
+        <measurement-chart
+          .measurements=${this.measurements}
+          metric="waterLevel"
+          label="Water Level"
+          unit="m"
+          .warningThreshold=${3.5}
+        ></measurement-chart>
+      </section>
+    `;
+  }
+
   private renderMessage(message: string, isError = false) {
     return html`<p class=${isError ? 'message error' : 'message'}>${message}</p>`;
   }
@@ -274,7 +338,7 @@ export class HydroApp extends LitElement {
       this.selectedStationId = stations[0]?.id ?? '';
 
       if (this.selectedStationId) {
-        void this.loadLatestMeasurement(this.selectedStationId);
+        void this.loadStationData(this.selectedStationId);
       }
     } catch (error) {
       if (this.isAbortError(error)) {
@@ -286,6 +350,7 @@ export class HydroApp extends LitElement {
       this.stations = [];
       this.selectedStationId = '';
       this.currentMeasurement = undefined;
+      this.measurements = [];
     } finally {
       if (!signal.aborted) {
         this.loadingStations = false;
@@ -293,39 +358,81 @@ export class HydroApp extends LitElement {
     }
   }
 
-  private async loadLatestMeasurement(stationId: string) {
-    this.measurementController?.abort();
-    this.measurementController = new AbortController();
-    const { signal } = this.measurementController;
+  private async loadStationData(stationId: string) {
+    this.stationDataController?.abort();
+    this.stationDataController = new AbortController();
+    const { signal } = this.stationDataController;
+    const { from, to } = this.createLast24HoursRange();
 
     this.loadingMeasurement = true;
+    this.loadingHistory = true;
     this.measurementError = '';
+    this.historyError = '';
     this.currentMeasurement = undefined;
+    this.measurements = [];
 
-    try {
-      const measurement = await StationService.getLatestMeasurement(
-        stationId,
-        signal,
-      );
+    const latestPromise = StationService.getLatestMeasurement(
+      stationId,
+      signal,
+    )
+      .then((data): LoadResult<Measurement> => ({ status: 'success', data }))
+      .catch((error: unknown): LoadResult<Measurement> => ({
+        status: 'error',
+        error,
+      }));
 
-      this.currentMeasurement = measurement;
-    } catch (error) {
-      if (this.isAbortError(error)) {
-        return;
-      }
+    const historyPromise = StationService.getMeasurements(
+      stationId,
+      from,
+      to,
+      signal,
+    )
+      .then((data): LoadResult<Measurement[]> => ({ status: 'success', data }))
+      .catch((error: unknown): LoadResult<Measurement[]> => ({
+        status: 'error',
+        error,
+      }));
 
-      console.error(error);
-      this.measurementError = 'Error loading measurement';
-    } finally {
-      if (!signal.aborted) {
-        this.loadingMeasurement = false;
-      }
+    const [latestResult, historyResult] = await Promise.all([
+      latestPromise,
+      historyPromise,
+    ]);
+
+    if (signal.aborted) {
+      return;
     }
+
+    if (latestResult.status === 'success') {
+      this.currentMeasurement = latestResult.data;
+    } else if (!this.isAbortError(latestResult.error)) {
+      console.error(latestResult.error);
+      this.measurementError = 'Error loading measurement';
+    }
+
+    if (historyResult.status === 'success') {
+      this.measurements = historyResult.data;
+    } else if (!this.isAbortError(historyResult.error)) {
+      console.error(historyResult.error);
+      this.historyError = 'Error loading historical data';
+    }
+
+    this.loadingMeasurement = false;
+    this.loadingHistory = false;
   }
 
   private handleStationSelected(event: CustomEvent<StationSelectedDetail>) {
     this.selectedStationId = event.detail.stationId;
-    void this.loadLatestMeasurement(event.detail.stationId);
+    void this.loadStationData(event.detail.stationId);
+  }
+
+  private createLast24HoursRange() {
+    const toDate = new Date();
+    const fromDate = new Date(toDate.getTime() - 24 * 60 * 60 * 1000);
+
+    return {
+      from: fromDate.toISOString(),
+      to: toDate.toISOString(),
+    };
   }
 
   private isAbortError(error: unknown) {
