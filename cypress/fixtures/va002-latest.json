@@ -1,0 +1,10 @@
+{
+  "stationId": "VA-002",
+  "timestamp": "2026-08-31T12:00:00.000Z",
+  "temperature": 21.3,
+  "humidity": 67,
+  "waterLevel": 2.87,
+  "flowRate": 50.1,
+  "rainfall": 0.4,
+  "quality": "valid"
+}

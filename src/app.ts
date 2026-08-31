@@ -257,6 +257,7 @@ export class HydroApp extends LitElement {
     return html`
       <section class="dashboard-controls">
         <station-selector
+          data-cy="station-selector"
           .stations=${this.stations}
           .selectedStationId=${this.selectedStationId}
           @station-selected=${this.handleStationSelected}
@@ -283,12 +284,16 @@ export class HydroApp extends LitElement {
           Status: ${selectedStation.status.toUpperCase()}
         </span>
         <connection-status
+          data-cy="connection-status"
           .status=${this.connectionStatus}
         ></connection-status>
       </section>
 
       ${this.renderMeasurementState()}
-      <alarm-panel .alarms=${selectedStationAlarms}></alarm-panel>
+      <alarm-panel
+        data-cy="alarm-panel"
+        .alarms=${selectedStationAlarms}
+      ></alarm-panel>
       ${this.renderHistoryState()}
     `;
   }
@@ -309,23 +314,27 @@ export class HydroApp extends LitElement {
     return html`
       <section class="sensor-grid" aria-label="Sensor overview">
         <sensor-card
+          data-cy="sensor-card-temperature"
           label="Temperature"
           .value=${this.currentMeasurement.temperature}
           .unit=${'\u00b0C'}
           .warningThreshold=${35}
         ></sensor-card>
         <sensor-card
+          data-cy="sensor-card-humidity"
           label="Humidity"
           .value=${this.currentMeasurement.humidity}
           unit="%"
         ></sensor-card>
         <sensor-card
+          data-cy="sensor-card-waterLevel"
           label="Water Level"
           .value=${this.currentMeasurement.waterLevel}
           unit="m"
           .warningThreshold=${3.5}
         ></sensor-card>
         <sensor-card
+          data-cy="sensor-card-flowRate"
           label="Flow Rate"
           .value=${this.currentMeasurement.flowRate}
           .unit=${'m\u00b3/s'}
@@ -362,6 +371,7 @@ export class HydroApp extends LitElement {
     return html`
       <section class="history-section" aria-label="Historical measurements">
         <measurement-chart
+          data-cy="measurement-chart"
           .measurements=${this.measurements}
           metric="waterLevel"
           label="Water Level"

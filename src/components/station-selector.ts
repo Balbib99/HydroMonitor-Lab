@@ -48,6 +48,7 @@ export class StationSelector extends LitElement {
     return html`
       <label for="station-select">Station</label>
       <select
+        data-cy="station-select"
         id="station-select"
         .value=${this.selectedStationId}
         @change=${this.handleChange}

@@ -1,0 +1,32 @@
+[
+  {
+    "stationId": "VA-001",
+    "timestamp": "2026-08-31T08:00:00.000Z",
+    "temperature": 23.9,
+    "humidity": 62,
+    "waterLevel": 3.05,
+    "flowRate": 41.2,
+    "rainfall": 0,
+    "quality": "valid"
+  },
+  {
+    "stationId": "VA-001",
+    "timestamp": "2026-08-31T09:00:00.000Z",
+    "temperature": 24.1,
+    "humidity": 61,
+    "waterLevel": 3.12,
+    "flowRate": 42,
+    "rainfall": 0,
+    "quality": "valid"
+  },
+  {
+    "stationId": "VA-001",
+    "timestamp": "2026-08-31T10:00:00.000Z",
+    "temperature": 24.4,
+    "humidity": 61,
+    "waterLevel": 3.18,
+    "flowRate": 42.4,
+    "rainfall": 0,
+    "quality": "valid"
+  }
+]

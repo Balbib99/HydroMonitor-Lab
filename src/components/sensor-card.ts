@@ -76,12 +76,17 @@ export class SensorCard extends LitElement {
     const status = isWarning ? 'WARNING' : 'NORMAL';
 
     return html`
-      <article>
+      <article data-cy="sensor-card">
         <h2>${this.label}</h2>
-        <div class="reading">
+        <div class="reading" data-cy="sensor-reading">
           ${this.value} <span class="unit">${this.unit}</span>
         </div>
-        <div class=${isWarning ? 'status warning' : 'status'}>${status}</div>
+        <div
+          class=${isWarning ? 'status warning' : 'status'}
+          data-cy="sensor-status"
+        >
+          ${status}
+        </div>
       </article>
     `;
   }

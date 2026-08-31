@@ -11,6 +11,9 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "cypress:open": "node scripts/run-cypress.mjs open",
+    "cypress:run": "node scripts/run-cypress.mjs run",
+    "test:e2e": "start-server-and-test dev:all http://localhost:5173 cypress:run",
     "preview": "vite preview"
   },
   "devDependencies": {
@@ -18,7 +21,9 @@
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "concurrently": "^10.0.5",
+    "cypress": "^13.17.0",
     "jest": "^30.5.0",
+    "start-server-and-test": "^3.0.12",
     "ts-jest": "^29.4.12",
     "tsx": "^4.23.13",
     "typescript": "~6.0.2",
