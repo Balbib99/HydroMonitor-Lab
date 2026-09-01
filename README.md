@@ -2,74 +2,70 @@
 
 [![CI](https://github.com/Balbib99/HydroMonitor-Lab/actions/workflows/ci.yml/badge.svg)](https://github.com/Balbib99/HydroMonitor-Lab/actions/workflows/ci.yml)
 
-A frontend monitoring dashboard for simulated hydrological and environmental station data, built to explore modern frontend patterns for data-oriented applications.
+HydroMonitor Lab is an independent educational environmental monitoring dashboard for simulated HydroMet-style station data. It is a frontend-focused portfolio project built with Lit, TypeScript, REST, Server-Sent Events, Chart.js, automated testing, GitHub Actions CI, and Vercel deployment.
 
-HydroMonitor Lab is an independent educational project inspired by publicly available requirements for HydroMet-oriented frontend development. It is not a KISTERS product and does not reproduce internal KISTERS software, architecture, or proprietary data.
+HydroMonitor Lab is not a KISTERS product and does not reproduce KISTERS internal software, architecture, infrastructure, or proprietary data.
 
-Repository: https://github.com/Balbib99/HydroMonitor-Lab
+[Live Demo](https://hydromonitor-lab.vercel.app) | [Source Code](https://github.com/Balbib99/HydroMonitor-Lab)
+
+## Live Demo
+
+Production: https://hydromonitor-lab.vercel.app
+
+The public demo lets you try station selection, current measurements, a historical water-level chart, realtime updates through Server-Sent Events, threshold-based alerts, and a responsive desktop/mobile layout.
+
+The backend and data are simulated for an educational demo. This project does not represent real HydroMet production infrastructure.
 
 ## Project Overview
 
-HydroMonitor Lab simulates a technical monitoring dashboard for HydroMet-style stations. It loads station data through REST, keeps current readings updated through Server-Sent Events, renders historical measurements, evaluates threshold-based alarms, and includes automated tests for logic and browser flows.
+HydroMonitor Lab simulates a technical monitoring dashboard for hydrological and environmental stations. The application loads station snapshots through REST, listens for realtime telemetry through SSE, renders historical measurements, and evaluates threshold-based alarms in the browser.
+
+The project is intentionally scoped as a clear frontend software development demonstration: component design, typed domain models, service boundaries, async request handling, user-visible states, testing, CI, and deployment.
 
 ## Features
 
 - Station selection
-- Current sensor readings
-- Historical time series
-- REST data loading
-- Realtime SSE updates
-- Threshold-based alarms
-- Loading and error states
-- Responsive dashboard UI
-- Accessibility considerations
+- Realtime sensor measurements
+- Historical time-series visualization
+- Threshold-based alarm engine
+- Loading, error, and empty states
+- `AbortController` handling for stale requests
+- Responsive desktop/mobile layout
+- Accessibility basics with semantic HTML, native controls, focus styles, live regions, and chart summary text
+- Jest coverage for isolated logic and services
+- Cypress E2E coverage for browser-level flows
+- GitHub Actions Continuous Integration
+- Public Vercel deployment
 
 ## Tech Stack
 
-Frontend:
-
-- TypeScript
-- Lit
-- Web Components
-- Chart.js
-
-Backend simulation:
-
-- Node
-- Express
-
-Testing:
-
-- Jest
-- Cypress
-
-Engineering:
-
-- Vite
-- GitHub Actions
+| Area | Technologies |
+| --- | --- |
+| Frontend | Lit, TypeScript, Vite, Web Components, Chart.js |
+| Backend / Data simulation | Express, REST, Server-Sent Events |
+| Testing | Jest, Cypress |
+| CI / Deployment | GitHub Actions, Vercel |
 
 ## Architecture
 
 ```mermaid
 flowchart TD
-  UI[Lit Web Components] --> State[HydroApp State]
-  StationService[StationService] --> REST[Local REST API]
-  RealtimeService[RealtimeService] --> SSE[Local SSE Stream]
-  REST --> State
-  SSE --> State
-  State --> Cards[Sensor Cards]
-  State --> Chart[Measurement Chart]
-  State --> AlarmEngine[Alarm Engine]
-  AlarmEngine --> AlarmPanel[Alarm Panel]
+  Browser[Browser] --> Frontend[Lit frontend]
+  Frontend --> Services[StationService / RealtimeService]
+  Services --> REST[REST endpoints]
+  Services --> SSE[SSE stream]
+  REST --> API[Express mock API]
+  SSE --> API
+  Frontend --> UI[Sensor cards, chart, alerts]
 ```
 
 ## REST + Realtime
 
-REST is used for the initial station list, latest measurement, and historical measurement range.
+REST is used for the station list, station details, latest measurements, and historical measurement ranges.
 
-SSE is used for server-to-client realtime telemetry, where the mock server pushes new measurements to the browser.
+SSE is used for server-to-client realtime telemetry, where the simulated backend pushes new measurements to the browser.
 
-Available local endpoints:
+Available API endpoints:
 
 | Method | Endpoint |
 | --- | --- |
@@ -78,8 +74,6 @@ Available local endpoints:
 | GET | `/api/stations/:id/measurements/latest` |
 | GET | `/api/stations/:id/measurements` |
 | GET | `/api/stations/:id/measurements/stream` |
-
-These endpoints are part of the simulated local API.
 
 ## Data Flow
 
@@ -100,9 +94,9 @@ The alarm engine is based on pure functions and `AlarmRule` definitions. Measure
 
 ## Testing
 
-Jest covers isolated logic and services. Cypress covers browser-level user flows, responsive behavior, realtime updates, and basic accessibility assertions.
+Jest covers isolated logic and services. Cypress covers complete user-visible flows, responsive behavior, realtime updates, and basic accessibility assertions.
 
-Current local validation:
+Current validation:
 
 - Jest: 21 tests
 - Cypress: 13 E2E tests
@@ -111,22 +105,37 @@ Current local validation:
 
 GitHub Actions runs Continuous Integration on pushes and pull requests targeting `main`.
 
-The `quality` job runs:
+The workflow has two jobs:
 
-- `npm ci`
-- `npm run build`
-- `npm test`
+- `quality`: installs dependencies with `npm ci`, builds the project, and runs Jest.
+- `e2e`: runs after `quality` and executes the Cypress E2E suite.
 
-The `e2e` job runs after `quality`:
-
-- `npm ci`
-- `npm run test:e2e`
+CI validates changes automatically. It is not Continuous Deployment: GitHub Actions does not deploy HydroMonitor Lab automatically in this project.
 
 More details: [docs/ci.md](docs/ci.md)
 
 ## Deployment
 
-HydroMonitor Lab is prepared for Vercel deployment, but no public deployment URL is configured yet.
+Production: https://hydromonitor-lab.vercel.app
+
+Local development runs the frontend and API as separate processes:
+
+```text
+Browser
+  -> Vite :5173
+  -> Express :3001
+```
+
+Production runs on Vercel using the deployed frontend and same-origin API routes:
+
+```text
+Browser
+  -> Vercel
+     -> Vite/Lit frontend
+     -> /api -> Express
+```
+
+`VITE_API_BASE_URL` can be used to point the frontend to another API if needed. In production, when it is not set, the frontend defaults to same-origin `/api`.
 
 More details: [docs/deployment.md](docs/deployment.md)
 
@@ -164,16 +173,11 @@ Run the frontend and mock API together:
 npm run dev:all
 ```
 
-Frontend:
+Local URLs:
 
 ```text
-http://localhost:5173
-```
-
-API:
-
-```text
-http://localhost:3001
+Frontend: http://localhost:5173
+API:      http://localhost:3001
 ```
 
 ## Available Scripts
@@ -195,8 +199,9 @@ http://localhost:3001
 ```text
 src/             frontend components, models, services, utilities, and tests
 mock-server/     local Express simulation backend
+api/             Vercel serverless API entry point
 cypress/         E2E specs, fixtures, and support
-docs/            project notes for CI, performance, accessibility, and demo
+docs/            project notes for CI, deployment, performance, accessibility, and demo
 .github/         GitHub Actions workflow
 ```
 
@@ -210,24 +215,25 @@ docs/            project notes for CI, performance, accessibility, and demo
 - State updates are immutable so Lit reactivity stays explicit.
 - Jest and Cypress split fast logic tests from browser-flow validation.
 - GitHub Actions validates build, unit tests, and E2E tests automatically.
+- Vercel serves the frontend and exposes the simulated Express API through `/api`.
 
 ## Known Limitations
 
-- The backend is a local mock server.
+- The backend is a mock backend.
+- Sensor data is simulated.
 - Data is not persisted.
-- SSE gap recovery after reconnect is not implemented.
-- Production-scale downsampling is documented but not implemented.
-- Accessibility has not been fully audited.
-- Thresholds and measurements are simulated.
+- SSE state is generated in memory.
+- Robust recovery of realtime gaps is not implemented.
+- A production downsampling pipeline is not implemented.
+- Accessibility improvements are included, but there has been no full WCAG audit.
 
 ## Future Improvements
 
-- Recover gaps with REST after SSE reconnects.
-- Add user-selectable time ranges.
-- Add server aggregation and downsampling.
-- Introduce persistent storage.
+- Add persistent backend/data storage.
+- Recover gaps after realtime stream interruptions.
+- Add backend aggregation and downsampling.
 - Add richer accessibility testing.
-- Use the [Lit to Angular comparison](docs/angular-vs-lit.md) as interview preparation material.
+- Add production observability.
 
 ## Screenshot
 
