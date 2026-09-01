@@ -12,6 +12,9 @@ module.exports = {
       },
     ],
   },
+  moduleNameMapper: {
+    '^\\.\\./config/api$': '<rootDir>/src/test-utils/api-config-mock.ts',
+  },
   collectCoverageFrom: [
     'src/utils/alarm-engine.ts',
     'src/utils/alarm-utils.ts',

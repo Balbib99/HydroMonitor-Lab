@@ -1,6 +1,5 @@
 import type { Measurement } from '../models/measurement';
-
-const API_BASE_URL = 'http://localhost:3001/api';
+import { API_BASE_URL } from '../config/api';
 
 type RealtimeHandlers = {
   onMeasurement: (measurement: Measurement) => void;

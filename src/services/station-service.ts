@@ -1,7 +1,6 @@
 import type { Measurement } from '../models/measurement';
 import type { Station } from '../models/station';
-
-const API_BASE_URL = 'http://localhost:3001/api';
+import { API_BASE_URL, createApiUrl } from '../config/api';
 
 async function parseJsonResponse<T>(
   response: Response,
@@ -57,8 +56,8 @@ export class StationService {
     signal?: AbortSignal,
   ): Promise<Measurement[]> {
     const encodedStationId = encodeURIComponent(stationId);
-    const url = new URL(
-      `${API_BASE_URL}/stations/${encodedStationId}/measurements`,
+    const url = createApiUrl(
+      `/stations/${encodedStationId}/measurements`,
     );
     const queryParams = new URLSearchParams();
 

@@ -13,7 +13,7 @@
     "test:coverage": "jest --coverage",
     "cypress:open": "node scripts/run-cypress.mjs open",
     "cypress:run": "node scripts/run-cypress.mjs run",
-    "test:e2e": "start-server-and-test dev:all http://localhost:5173 cypress:run",
+    "test:e2e": "node scripts/run-e2e.mjs",
     "preview": "vite preview"
   },
   "devDependencies": {

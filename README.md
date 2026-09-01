@@ -124,6 +124,12 @@ The `e2e` job runs after `quality`:
 
 More details: [docs/ci.md](docs/ci.md)
 
+## Deployment
+
+HydroMonitor Lab is prepared for Vercel deployment, but no public deployment URL is configured yet.
+
+More details: [docs/deployment.md](docs/deployment.md)
+
 ## Performance Considerations
 
 The frontend keeps a bounded recent history with `MAX_POINTS`, requests limited time ranges, and updates the existing Chart.js instance instead of recreating it. Production-scale datasets would need server-side aggregation, downsampling, cache-aware range loading, and possibly Web Workers or Canvas/WebGL-specific rendering strategies.
