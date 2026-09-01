@@ -1,4 +1,4 @@
-import type { Measurement } from '../models/measurement';
+import type { Measurement } from '../models/measurement.js';
 
 export const mockMeasurements: Measurement[] = [
   {

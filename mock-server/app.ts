@@ -1,9 +1,9 @@
 import cors from 'cors';
 import express from 'express';
-import { historicalMeasurements } from './data/historical-measurements';
-import { mockMeasurements } from '../src/data/mock-measurements';
-import { mockStations } from '../src/data/mock-stations';
-import type { Measurement } from '../src/models/measurement';
+import { historicalMeasurements } from './data/historical-measurements.js';
+import { mockMeasurements } from '../src/data/mock-measurements.js';
+import { mockStations } from '../src/data/mock-stations.js';
+import type { Measurement } from '../src/models/measurement.js';
 
 export const app = express();
 

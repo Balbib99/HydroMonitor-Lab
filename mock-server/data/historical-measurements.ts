@@ -1,4 +1,4 @@
-import type { Measurement } from '../../src/models/measurement';
+import type { Measurement } from '../../src/models/measurement.js';
 
 const intervalMinutes = 30;
 const pointsPerStation = 48;
