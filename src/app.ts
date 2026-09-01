@@ -82,6 +82,7 @@ export class HydroApp extends LitElement {
     main {
       width: min(100%, 68rem);
       margin: 0 auto;
+      overflow-wrap: anywhere;
     }
 
     header {
@@ -227,7 +228,7 @@ export class HydroApp extends LitElement {
     );
 
     return html`
-      <main>
+      <main data-cy="app-main">
         <header>
           <h1>HydroMonitor Lab</h1>
           <p>HydroMet Monitoring Dashboard</p>
@@ -255,7 +256,7 @@ export class HydroApp extends LitElement {
     }
 
     return html`
-      <section class="dashboard-controls">
+      <section class="dashboard-controls" aria-label="Station controls">
         <station-selector
           data-cy="station-selector"
           .stations=${this.stations}

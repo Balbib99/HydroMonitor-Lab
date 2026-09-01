@@ -48,6 +48,7 @@ export class MeasurementChart extends LitElement {
       border-radius: 0.5rem;
       background: #ffffff;
       box-shadow: 0 0.75rem 2rem rgb(15 47 63 / 8%);
+      overflow-wrap: anywhere;
     }
 
     h2 {
@@ -65,8 +66,21 @@ export class MeasurementChart extends LitElement {
 
     .chart-container {
       position: relative;
+      width: 100%;
       height: 20rem;
       margin-top: 1.25rem;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     @media (max-width: 42rem) {
@@ -103,13 +117,17 @@ export class MeasurementChart extends LitElement {
   }
 
   render() {
+    const summary = this.getAccessibleSummary();
+
     return html`
-      <article>
-        <h2>${this.label} - Last 24 Hours</h2>
+      <article aria-labelledby="measurement-chart-title">
+        <h2 id="measurement-chart-title">${this.label} - Last 24 Hours</h2>
         <p>${this.measurements.length} measurements, displayed as ${this.unit}</p>
+        <p id="measurement-chart-summary" class="sr-only">${summary}</p>
         <div class="chart-container">
           <canvas
             aria-label="${this.label.toLowerCase()} measurements for the last 24 hours"
+            aria-describedby="measurement-chart-summary"
             role="img"
           ></canvas>
         </div>
@@ -135,17 +153,12 @@ export class MeasurementChart extends LitElement {
   }
 
   private createChartConfiguration(): ChartConfiguration<'line', number[], string> {
-    const labels = this.measurements.map((measurement) =>
-      this.formatTime(measurement.timestamp),
-    );
-    const values = this.measurements.map((measurement) =>
-      this.getMetricValue(measurement),
-    );
+    const chartData = this.getChartData();
     const datasets: ChartConfiguration<'line', number[], string>['data']['datasets'] =
       [
         {
           label: `${this.label} (${this.unit})`,
-          data: values,
+          data: chartData.values,
           borderColor: '#277da1',
           backgroundColor: 'rgb(39 125 161 / 12%)',
           borderWidth: 2,
@@ -158,7 +171,7 @@ export class MeasurementChart extends LitElement {
     if (this.warningThreshold !== undefined) {
       datasets.push({
         label: `Warning threshold (${this.warningThreshold} ${this.unit})`,
-        data: this.measurements.map(() => this.warningThreshold ?? 0),
+        data: chartData.values.map(() => this.warningThreshold ?? 0),
         borderColor: '#d97706',
         borderDash: [6, 6],
         borderWidth: 2,
@@ -170,10 +183,11 @@ export class MeasurementChart extends LitElement {
     return {
       type: 'line',
       data: {
-        labels,
+        labels: chartData.labels,
         datasets,
       },
       options: {
+        animation: false,
         responsive: true,
         maintainAspectRatio: false,
         interaction: {
@@ -201,6 +215,51 @@ export class MeasurementChart extends LitElement {
 
   private getMetricValue(measurement: Measurement): number {
     return metricValueGetters[this.metric](measurement);
+  }
+
+  private getChartData() {
+    return this.measurements.reduce(
+      (chartData, measurement) => {
+        chartData.labels.push(this.formatTime(measurement.timestamp));
+        chartData.values.push(this.getMetricValue(measurement));
+        return chartData;
+      },
+      {
+        labels: [] as string[],
+        values: [] as number[],
+      },
+    );
+  }
+
+  private getAccessibleSummary(): string {
+    if (this.measurements.length === 0) {
+      return `${this.label} chart. No measurements available.`;
+    }
+
+    const [firstMeasurement, ...remainingMeasurements] = this.measurements;
+    let latestValue = this.getMetricValue(firstMeasurement);
+    let minValue = latestValue;
+    let maxValue = latestValue;
+
+    for (const measurement of remainingMeasurements) {
+      const value = this.getMetricValue(measurement);
+      latestValue = value;
+      minValue = Math.min(minValue, value);
+      maxValue = Math.max(maxValue, value);
+    }
+
+    return `${this.label} chart. ${this.measurements.length} measurements. Latest value ${this.formatValue(
+      latestValue,
+    )} ${this.unit}. Range ${this.formatValue(minValue)} to ${this.formatValue(
+      maxValue,
+    )} ${this.unit}.`;
+  }
+
+  private formatValue(value: number): string {
+    return new Intl.NumberFormat('en-US', {
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 0,
+    }).format(value);
   }
 
   private formatTime(timestamp: string): string {

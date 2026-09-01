@@ -47,7 +47,11 @@ export class ConnectionStatusElement extends LitElement {
 
   render() {
     return html`
-      <span class=${`status ${this.status}`}>
+      <span
+        class=${`status ${this.status}`}
+        role="status"
+        aria-live="polite"
+      >
         <span class="indicator" aria-hidden="true"></span>
         ${this.status.toUpperCase()}
       </span>

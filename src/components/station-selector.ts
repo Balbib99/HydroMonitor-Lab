@@ -38,7 +38,7 @@ export class StationSelector extends LitElement {
       font: inherit;
     }
 
-    select:focus {
+    select:focus-visible {
       border-color: #277da1;
       outline: 3px solid rgb(39 125 161 / 20%);
     }

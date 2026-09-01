@@ -20,6 +20,7 @@ export class AlarmPanel extends LitElement {
       border-radius: 0.5rem;
       background: #ffffff;
       box-shadow: 0 0.75rem 2rem rgb(15 47 63 / 8%);
+      overflow-wrap: anywhere;
     }
 
     h2 {
@@ -50,6 +51,7 @@ export class AlarmPanel extends LitElement {
       border-left-width: 0.35rem;
       border-radius: 0.5rem;
       background: #f8fbfc;
+      overflow-wrap: anywhere;
     }
 
     li.warning {
@@ -93,7 +95,7 @@ export class AlarmPanel extends LitElement {
 
   render() {
     return html`
-      <section aria-labelledby="alarm-panel-title">
+      <section aria-labelledby="alarm-panel-title" aria-live="polite">
         <h2 id="alarm-panel-title">Active / Recent Alerts</h2>
         ${this.alarms.length > 0 ? this.renderAlarmList() : html`<p>No active alerts</p>`}
       </section>
@@ -112,7 +114,14 @@ export class AlarmPanel extends LitElement {
     const metadata = getMetricMetadata(alarm.metric);
 
     return html`
-      <li class=${alarm.severity}>
+      <li
+        class=${alarm.severity}
+        aria-label=${`${alarm.severity} alert for ${metadata.label}: ${this.formatValue(
+          alarm.value,
+        )} ${metadata.unit} is greater than or equal to ${this.formatValue(
+          alarm.threshold,
+        )} ${metadata.unit}`}
+      >
         <span class=${`severity ${alarm.severity}`}>
           ${alarm.severity.toUpperCase()}
         </span>

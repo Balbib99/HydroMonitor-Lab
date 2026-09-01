@@ -28,6 +28,7 @@ export class SensorCard extends LitElement {
       border-radius: 0.5rem;
       background: #ffffff;
       box-shadow: 0 0.75rem 2rem rgb(15 47 63 / 8%);
+      overflow-wrap: anywhere;
     }
 
     h2 {
@@ -76,7 +77,10 @@ export class SensorCard extends LitElement {
     const status = isWarning ? 'WARNING' : 'NORMAL';
 
     return html`
-      <article data-cy="sensor-card">
+      <article
+        data-cy="sensor-card"
+        aria-label=${`${this.label}: ${this.value} ${this.unit}, ${status}`}
+      >
         <h2>${this.label}</h2>
         <div class="reading" data-cy="sensor-reading">
           ${this.value} <span class="unit">${this.unit}</span>

@@ -94,9 +94,55 @@ describe('HydroMonitor Lab dashboard', () => {
     cy.visit('/');
 
     waitForDashboard();
+    cy.get('h1').should('contain', 'HydroMonitor Lab');
+    cy.get('[data-cy="app-main"]').should('be.visible');
     cy.get('[data-cy="sensor-card-temperature"]').should('exist');
     cy.get('[data-cy="sensor-card-humidity"]').should('exist');
     cy.get('[data-cy="sensor-card-flowRate"]').should('exist');
+  });
+
+  it('exposes basic accessible names and status text', () => {
+    interceptDefaultRest();
+    disableRealtime();
+    cy.wait('@latest');
+    cy.wait('@history');
+
+    cy.get('[data-cy="station-selector"]').within(() => {
+      cy.get('label')
+        .should('have.attr', 'for', 'station-select')
+        .and('contain', 'Station');
+      cy.get('[data-cy="station-select"]').should('have.attr', 'id', 'station-select');
+    });
+    cy.get('[data-cy="connection-status"]').within(() => {
+      cy.get('[role="status"]').should('contain', 'CONNECTED');
+    });
+    cy.get('[data-cy="sensor-card-waterLevel"]').within(() => {
+      cy.get('article')
+        .should('have.attr', 'aria-label')
+        .and('contain', 'Water Level');
+    });
+    cy.get('[data-cy="measurement-chart"]').within(() => {
+      cy.get('canvas')
+        .should('have.attr', 'role', 'img')
+        .and('have.attr', 'aria-describedby', 'measurement-chart-summary');
+      cy.get('#measurement-chart-summary').should('contain', 'measurements');
+    });
+    cy.get('[data-cy="alarm-panel"]').within(() => {
+      cy.get('section').should('have.attr', 'aria-live', 'polite');
+      cy.contains('Active / Recent Alerts').should('be.visible');
+    });
+
+    selectStation('VA-003');
+    cy.wait('@latest');
+    cy.wait('@history');
+
+    cy.get('[data-cy="alarm-panel"]').within(() => {
+      cy.contains('CRITICAL').should('be.visible');
+      cy.get('li')
+        .first()
+        .should('have.attr', 'aria-label')
+        .and('contain', 'critical alert');
+    });
   });
 
   it('updates the dashboard when the station changes', () => {
@@ -277,16 +323,25 @@ describe('HydroMonitor Lab dashboard', () => {
       });
   });
 
-  it('keeps main content available on mobile viewport', () => {
+  it('keeps main content available across desktop and mobile viewports', () => {
     interceptDefaultRest();
-    cy.viewport('iphone-x');
+    cy.viewport(1280, 720);
     disableRealtime();
     cy.wait('@latest');
     cy.wait('@history');
 
+    cy.get('[data-cy="app-main"]').should('be.visible');
     cy.get('[data-cy="station-selector"]').should('be.visible');
-    cy.get('[data-cy="sensor-card-waterLevel"]').should('exist');
-    cy.get('[data-cy="measurement-chart"]').should('exist');
+    cy.get('[data-cy="sensor-card-waterLevel"]').should('be.visible');
+    cy.get('[data-cy="measurement-chart"]').should('be.visible');
+    cy.get('[data-cy="alarm-panel"]').should('be.visible');
+
+    cy.viewport('iphone-x');
+    cy.get('[data-cy="app-main"]').should('be.visible');
+    cy.get('[data-cy="station-selector"]').should('be.visible');
+    cy.get('[data-cy="sensor-card-waterLevel"]').should('be.visible');
+    cy.get('[data-cy="measurement-chart"]').should('be.visible');
+    cy.get('[data-cy="alarm-panel"]').should('be.visible');
   });
 
   it('changes station through the native select control', () => {
