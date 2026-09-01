@@ -76,11 +76,11 @@ export class HydroApp extends LitElement {
     :host {
       display: block;
       min-height: 100vh;
-      padding: var(--space-xl);
+      padding: var(--space-lg);
     }
 
     main {
-      width: min(100%, 74rem);
+      width: min(94vw, 100rem);
       margin: 0 auto;
       overflow-wrap: anywhere;
     }
@@ -98,9 +98,9 @@ export class HydroApp extends LitElement {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      gap: var(--space-lg);
-      margin-bottom: var(--space-lg);
-      padding: var(--space-lg);
+      gap: var(--space-md);
+      margin-bottom: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
     }
 
     connection-status {
@@ -117,20 +117,20 @@ export class HydroApp extends LitElement {
     h1 {
       margin: 0;
       color: var(--text);
-      font-size: 2.35rem;
+      font-size: 2.1rem;
       font-weight: 700;
       line-height: 1.1;
     }
 
     p {
-      margin: var(--space-xs) 0 0;
+      margin: 0.25rem 0 0;
       color: var(--text-muted);
-      font-size: 1.125rem;
+      font-size: 1rem;
     }
 
     .eyebrow {
       display: block;
-      margin-bottom: var(--space-xs);
+      margin-bottom: 0.35rem;
       color: var(--accent-strong);
       font-size: 0.72rem;
       font-weight: 800;
@@ -139,21 +139,21 @@ export class HydroApp extends LitElement {
     }
 
     .station-context {
-      margin-bottom: var(--space-lg);
-      padding: var(--space-lg);
+      margin-bottom: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
     }
 
     .station-context-grid {
       display: grid;
       grid-template-columns: minmax(16rem, 24rem) 1fr;
-      gap: var(--space-lg);
-      align-items: end;
+      gap: var(--space-md);
+      align-items: center;
     }
 
     .station-meta {
       display: grid;
       gap: var(--space-xs);
-      padding: var(--space-md);
+      padding: var(--space-sm) var(--space-md);
       border: 1px solid var(--border);
       border-radius: calc(var(--radius) - 0.15rem);
       background: var(--surface-muted);
@@ -162,7 +162,7 @@ export class HydroApp extends LitElement {
     .station-name {
       margin: 0;
       color: var(--text);
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       font-weight: 700;
       line-height: 1.2;
     }
@@ -197,11 +197,15 @@ export class HydroApp extends LitElement {
     .sensor-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: var(--space-md);
+      gap: var(--space-sm);
     }
 
     .history-section {
-      margin-top: var(--space-lg);
+      margin-top: var(--space-md);
+    }
+
+    .insights-grid {
+      margin-top: var(--space-md);
     }
 
     .message {
@@ -219,6 +223,24 @@ export class HydroApp extends LitElement {
     @media (max-width: 64rem) {
       .sensor-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 75rem) {
+      .insights-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2.2fr) minmax(300px, 0.8fr);
+        gap: var(--space-md);
+        align-items: start;
+      }
+
+      .history-section {
+        margin-top: 0;
+      }
+
+      .insights-grid measurement-chart,
+      .insights-grid alarm-panel {
+        margin-top: 0;
       }
     }
 
@@ -243,6 +265,10 @@ export class HydroApp extends LitElement {
       .station-context-grid,
       .sensor-grid {
         grid-template-columns: 1fr;
+      }
+
+      .insights-grid {
+        margin-top: var(--space-md);
       }
     }
   `;
@@ -336,11 +362,13 @@ export class HydroApp extends LitElement {
       </section>
 
       ${this.renderMeasurementState()}
-      ${this.renderHistoryState()}
-      <alarm-panel
-        data-cy="alarm-panel"
-        .alarms=${selectedStationAlarms}
-      ></alarm-panel>
+      <div class="insights-grid">
+        ${this.renderHistoryState()}
+        <alarm-panel
+          data-cy="alarm-panel"
+          .alarms=${selectedStationAlarms}
+        ></alarm-panel>
+      </div>
     `;
   }
 

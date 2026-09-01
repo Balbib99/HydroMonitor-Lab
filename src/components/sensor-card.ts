@@ -23,8 +23,8 @@ export class SensorCard extends LitElement {
     article {
       display: grid;
       min-width: 0;
-      min-height: 10.5rem;
-      padding: var(--space-lg, 1.5rem);
+      min-height: 9.25rem;
+      padding: var(--space-md, 1rem);
       border: 1px solid var(--border, #ccdce2);
       border-radius: var(--radius, 0.75rem);
       background: var(--surface, #ffffff);
@@ -43,9 +43,9 @@ export class SensorCard extends LitElement {
 
     .reading {
       align-self: center;
-      margin: var(--space-lg, 1.5rem) 0;
+      margin: var(--space-md, 1rem) 0;
       color: var(--text, #15242b);
-      font-size: clamp(2.25rem, 6vw, 3rem);
+      font-size: clamp(2rem, 4vw, 2.75rem);
       font-weight: 700;
       line-height: 1;
     }

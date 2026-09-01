@@ -39,12 +39,14 @@ export class MeasurementChart extends LitElement {
   static styles = css`
     :host {
       display: block;
-      margin-top: var(--space-lg, 1.5rem);
+      margin-top: var(--space-md, 1rem);
     }
 
     article {
+      display: flex;
+      flex-direction: column;
       min-width: 0;
-      padding: var(--space-lg, 1.5rem);
+      padding: var(--space-md, 1rem);
       border: 1px solid var(--border, #ccdce2);
       border-radius: var(--radius, 0.75rem);
       background: var(--surface, #ffffff);
@@ -70,10 +72,11 @@ export class MeasurementChart extends LitElement {
 
     .chart-container {
       position: relative;
+      flex: 1;
       min-width: 0;
       width: 100%;
-      height: 21rem;
-      margin-top: var(--space-lg, 1.5rem);
+      height: 23rem;
+      margin-top: var(--space-md, 1rem);
     }
 
     canvas {
@@ -100,6 +103,16 @@ export class MeasurementChart extends LitElement {
 
       .chart-container {
         height: 16rem;
+      }
+    }
+
+    @media (min-width: 75rem) {
+      article {
+        height: 29rem;
+      }
+
+      .chart-container {
+        min-height: 0;
       }
     }
   `;

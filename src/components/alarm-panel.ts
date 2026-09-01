@@ -11,12 +11,12 @@ export class AlarmPanel extends LitElement {
   static styles = css`
     :host {
       display: block;
-      margin-top: var(--space-lg, 1.5rem);
+      margin-top: var(--space-md, 1rem);
     }
 
     section {
       min-width: 0;
-      padding: var(--space-lg, 1.5rem);
+      padding: var(--space-md, 1rem);
       border: 1px solid var(--border, #ccdce2);
       border-radius: var(--radius, 0.75rem);
       background: var(--surface, #ffffff);
@@ -103,6 +103,19 @@ export class AlarmPanel extends LitElement {
     @media (max-width: 42rem) {
       section {
         padding: var(--space-md, 1rem);
+      }
+    }
+
+    @media (min-width: 75rem) {
+      section {
+        display: flex;
+        flex-direction: column;
+        max-height: 29rem;
+      }
+
+      ul {
+        overflow-y: auto;
+        padding-right: 0.25rem;
       }
     }
   `;

@@ -337,7 +337,9 @@ describe('HydroMonitor Lab dashboard', () => {
     cy.wait('@history');
 
     [
+      [1920, 1080],
       [1440, 900],
+      [1200, 900],
       [1024, 768],
       [768, 900],
       [375, 812],
@@ -351,6 +353,18 @@ describe('HydroMonitor Lab dashboard', () => {
       cy.document().then((document) => {
         expect(document.documentElement.scrollWidth).to.be.at.most(width);
       });
+
+      if (width >= 1200) {
+        cy.get('[data-cy="measurement-chart"]').then(($chart) => {
+          cy.get('[data-cy="alarm-panel"]').then(($alarmPanel) => {
+            const chartRect = $chart[0].getBoundingClientRect();
+            const alarmPanelRect = $alarmPanel[0].getBoundingClientRect();
+
+            expect(chartRect.right).to.be.lessThan(alarmPanelRect.left);
+            expect(chartRect.width).to.be.greaterThan(alarmPanelRect.width);
+          });
+        });
+      }
     });
   });
 
