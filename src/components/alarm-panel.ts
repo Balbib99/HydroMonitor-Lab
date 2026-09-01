@@ -11,33 +11,41 @@ export class AlarmPanel extends LitElement {
   static styles = css`
     :host {
       display: block;
-      margin-top: 1.5rem;
+      margin-top: var(--space-lg, 1.5rem);
     }
 
     section {
-      padding: 1.5rem;
-      border: 1px solid #d8e2e7;
-      border-radius: 0.5rem;
-      background: #ffffff;
-      box-shadow: 0 0.75rem 2rem rgb(15 47 63 / 8%);
+      min-width: 0;
+      padding: var(--space-lg, 1.5rem);
+      border: 1px solid var(--border, #ccdce2);
+      border-radius: var(--radius, 0.75rem);
+      background: var(--surface, #ffffff);
+      box-shadow: var(--shadow, 0 1rem 2.5rem rgb(15 47 63 / 10%));
       overflow-wrap: anywhere;
     }
 
     h2 {
-      margin: 0 0 1rem;
-      color: #0f2f3f;
-      font-size: 1.25rem;
+      margin: 0 0 var(--space-md, 1rem);
+      color: var(--text, #15242b);
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
       line-height: 1.2;
+      text-transform: uppercase;
     }
 
     p {
       margin: 0;
-      color: #536471;
+      padding: var(--space-md, 1rem);
+      border: 1px dashed var(--border, #ccdce2);
+      border-radius: calc(var(--radius, 0.75rem) - 0.15rem);
+      background: var(--surface-muted, #f6fafb);
+      color: var(--text-muted, #5f7079);
     }
 
     ul {
       display: grid;
-      gap: 0.75rem;
+      gap: var(--space-sm, 0.75rem);
       margin: 0;
       padding: 0;
       list-style: none;
@@ -46,20 +54,20 @@ export class AlarmPanel extends LitElement {
     li {
       display: grid;
       gap: 0.35rem;
-      padding: 1rem;
-      border: 1px solid #d8e2e7;
+      padding: var(--space-md, 1rem);
+      border: 1px solid var(--border, #ccdce2);
       border-left-width: 0.35rem;
-      border-radius: 0.5rem;
-      background: #f8fbfc;
+      border-radius: calc(var(--radius, 0.75rem) - 0.15rem);
+      background: var(--surface-muted, #f6fafb);
       overflow-wrap: anywhere;
     }
 
     li.warning {
-      border-left-color: #d97706;
+      border-left-color: var(--warning, #a15c00);
     }
 
     li.critical {
-      border-left-color: #c2410c;
+      border-left-color: var(--critical, #a33a1d);
     }
 
     .severity {
@@ -72,24 +80,30 @@ export class AlarmPanel extends LitElement {
     }
 
     .severity.warning {
-      color: #8a4a00;
-      background: #fff2d8;
+      color: var(--warning, #a15c00);
+      background: var(--warning-bg, #fff1d0);
     }
 
     .severity.critical {
-      color: #8a2f18;
-      background: #fff1ed;
+      color: var(--critical, #a33a1d);
+      background: var(--critical-bg, #fff0eb);
     }
 
     .metric {
-      color: #20323b;
+      color: var(--text, #15242b);
       font-weight: 700;
     }
 
     .details,
     time {
-      color: #536471;
+      color: var(--text-muted, #5f7079);
       font-size: 0.95rem;
+    }
+
+    @media (max-width: 42rem) {
+      section {
+        padding: var(--space-md, 1rem);
+      }
     }
   `;
 

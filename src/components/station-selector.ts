@@ -21,25 +21,28 @@ export class StationSelector extends LitElement {
 
     label {
       display: block;
-      margin-bottom: 0.5rem;
-      color: #20323b;
-      font-size: 0.875rem;
-      font-weight: 700;
+      margin-bottom: var(--space-xs, 0.5rem);
+      color: var(--text-muted, #5f7079);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
     select {
       width: 100%;
       min-height: 2.75rem;
       padding: 0.65rem 0.8rem;
-      border: 1px solid #b9c9d2;
-      border-radius: 0.5rem;
-      background: #ffffff;
-      color: #172026;
+      border: 1px solid var(--border, #ccdce2);
+      border-radius: calc(var(--radius, 0.75rem) - 0.2rem);
+      background: var(--surface, #ffffff);
+      color: var(--text, #15242b);
       font: inherit;
+      font-weight: 600;
     }
 
     select:focus-visible {
-      border-color: #277da1;
+      border-color: var(--accent, #277da1);
       outline: 3px solid rgb(39 125 161 / 20%);
     }
   `;

@@ -22,33 +22,36 @@ export class SensorCard extends LitElement {
 
     article {
       display: grid;
-      min-height: 12rem;
-      padding: 1.5rem;
-      border: 1px solid #d8e2e7;
-      border-radius: 0.5rem;
-      background: #ffffff;
-      box-shadow: 0 0.75rem 2rem rgb(15 47 63 / 8%);
+      min-width: 0;
+      min-height: 10.5rem;
+      padding: var(--space-lg, 1.5rem);
+      border: 1px solid var(--border, #ccdce2);
+      border-radius: var(--radius, 0.75rem);
+      background: var(--surface, #ffffff);
+      box-shadow: var(--shadow, 0 1rem 2.5rem rgb(15 47 63 / 10%));
       overflow-wrap: anywhere;
     }
 
     h2 {
       margin: 0;
-      color: #20323b;
-      font-size: 1rem;
-      font-weight: 600;
+      color: var(--text-muted, #5f7079);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
     .reading {
       align-self: center;
-      margin: 1.5rem 0;
-      color: #0f2f3f;
-      font-size: clamp(2rem, 8vw, 3rem);
+      margin: var(--space-lg, 1.5rem) 0;
+      color: var(--text, #15242b);
+      font-size: clamp(2.25rem, 6vw, 3rem);
       font-weight: 700;
       line-height: 1;
     }
 
     .unit {
-      color: #536471;
+      color: var(--text-muted, #5f7079);
       font-size: 1.25rem;
       font-weight: 500;
     }
@@ -56,18 +59,29 @@ export class SensorCard extends LitElement {
     .status {
       align-self: end;
       width: fit-content;
-      padding: 0.35rem 0.6rem;
+      padding: 0.35rem 0.65rem;
       border-radius: 999px;
-      color: #1f5c3b;
-      background: #e8f6ee;
+      color: var(--success, #1f6b45);
+      background: var(--success-bg, #e4f4ec);
       font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.04em;
     }
 
     .status.warning {
-      color: #8a4a00;
-      background: #fff2d8;
+      color: var(--warning, #a15c00);
+      background: var(--warning-bg, #fff1d0);
+    }
+
+    @media (max-width: 42rem) {
+      article {
+        min-height: 9.5rem;
+        padding: var(--space-md, 1rem);
+      }
+
+      .reading {
+        font-size: clamp(2rem, 14vw, 2.75rem);
+      }
     }
   `;
 

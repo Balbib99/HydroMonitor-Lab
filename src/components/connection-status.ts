@@ -17,9 +17,10 @@ export class ConnectionStatusElement extends LitElement {
       align-items: center;
       gap: 0.45rem;
       width: fit-content;
-      padding: 0.35rem 0.6rem;
+      min-height: 2rem;
+      padding: 0.35rem 0.65rem;
       border-radius: 999px;
-      color: #5d6470;
+      color: var(--text-muted, #5f7079);
       background: #edf1f4;
       font-size: 0.75rem;
       font-weight: 700;
@@ -35,13 +36,13 @@ export class ConnectionStatusElement extends LitElement {
 
     .connecting,
     .reconnecting {
-      color: #8a4a00;
-      background: #fff2d8;
+      color: var(--warning, #a15c00);
+      background: var(--warning-bg, #fff1d0);
     }
 
     .connected {
-      color: #1f5c3b;
-      background: #e8f6ee;
+      color: var(--success, #1f6b45);
+      background: var(--success-bg, #e4f4ec);
     }
   `;
 

@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --strictPort",
     "build": "tsc && vite build",
     "mock-server": "tsx mock-server/server.ts",
     "dev:all": "concurrently \"npm run dev\" \"npm run mock-server\"",

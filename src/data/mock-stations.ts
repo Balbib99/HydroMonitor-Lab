@@ -7,7 +7,7 @@ export const mockStations: Station[] = [
     river: 'R\u00edo Pisuerga',
     latitude: 41.668,
     longitude: -4.728,
-    status: 'online',
+    status: 'operational',
   },
   {
     id: 'VA-002',
@@ -15,7 +15,7 @@ export const mockStations: Station[] = [
     river: 'R\u00edo Pisuerga',
     latitude: 41.652,
     longitude: -4.724,
-    status: 'warning',
+    status: 'degraded',
   },
   {
     id: 'VA-003',
@@ -23,6 +23,6 @@ export const mockStations: Station[] = [
     river: 'R\u00edo Esgueva',
     latitude: 41.659,
     longitude: -4.704,
-    status: 'online',
+    status: 'operational',
   },
 ];

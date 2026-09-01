@@ -76,133 +76,173 @@ export class HydroApp extends LitElement {
     :host {
       display: block;
       min-height: 100vh;
-      padding: 2rem;
+      padding: var(--space-xl);
     }
 
     main {
-      width: min(100%, 68rem);
+      width: min(100%, 74rem);
       margin: 0 auto;
       overflow-wrap: anywhere;
     }
 
-    header {
-      margin-bottom: 2rem;
-      text-align: center;
+    .app-header,
+    .station-context,
+    .message {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .app-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-lg);
+      margin-bottom: var(--space-lg);
+      padding: var(--space-lg);
+    }
+
+    connection-status {
+      flex: 0 0 auto;
+    }
+
+    station-selector,
+    sensor-card,
+    measurement-chart,
+    alarm-panel {
+      min-width: 0;
     }
 
     h1 {
       margin: 0;
-      color: #0f2f3f;
-      font-size: 2.5rem;
+      color: var(--text);
+      font-size: 2.35rem;
       font-weight: 700;
       line-height: 1.1;
     }
 
     p {
-      margin: 0.75rem 0 0;
-      color: #536471;
+      margin: var(--space-xs) 0 0;
+      color: var(--text-muted);
       font-size: 1.125rem;
     }
 
-    .dashboard-controls {
-      max-width: 24rem;
-      margin: 0 auto 1.5rem;
+    .eyebrow {
+      display: block;
+      margin-bottom: var(--space-xs);
+      color: var(--accent-strong);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
 
-    .station-summary {
+    .station-context {
+      margin-bottom: var(--space-lg);
+      padding: var(--space-lg);
+    }
+
+    .station-context-grid {
       display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 0.25rem 1rem;
-      margin-bottom: 1.5rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid #d8e2e7;
+      grid-template-columns: minmax(16rem, 24rem) 1fr;
+      gap: var(--space-lg);
+      align-items: end;
+    }
+
+    .station-meta {
+      display: grid;
+      gap: var(--space-xs);
+      padding: var(--space-md);
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) - 0.15rem);
+      background: var(--surface-muted);
     }
 
     .station-name {
       margin: 0;
-      color: #0f2f3f;
+      color: var(--text);
       font-size: 1.5rem;
       font-weight: 700;
       line-height: 1.2;
     }
 
     .station-river {
-      grid-column: 1;
       margin: 0;
-      color: #536471;
+      color: var(--text-muted);
+      font-size: 1rem;
     }
 
     .station-status {
-      grid-column: 1;
       width: fit-content;
-      margin-top: 0.5rem;
-      padding: 0.35rem 0.6rem;
+      padding: 0.35rem 0.65rem;
       border-radius: 999px;
-      color: #1f5c3b;
-      background: #e8f6ee;
+      color: var(--success);
+      background: var(--success-bg);
       font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.04em;
     }
 
-    .station-status.warning {
-      color: #8a4a00;
-      background: #fff2d8;
+    .station-status.degraded {
+      color: var(--warning);
+      background: var(--warning-bg);
     }
 
     .station-status.offline {
-      color: #5d6470;
-      background: #edf1f4;
-    }
-
-    connection-status {
-      grid-column: 2;
-      grid-row: 1 / span 3;
-      align-self: start;
+      color: var(--text-muted);
+      background: #e8eef1;
     }
 
     .sensor-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-md);
     }
 
     .history-section {
-      margin-top: 1.5rem;
+      margin-top: var(--space-lg);
     }
 
     .message {
-      padding: 1.5rem;
-      border: 1px solid #d8e2e7;
-      border-radius: 0.5rem;
-      background: #ffffff;
-      color: #536471;
+      padding: var(--space-lg);
+      color: var(--text-muted);
       text-align: center;
     }
 
     .message.error {
-      border-color: #f0b4a8;
-      color: #8a2f18;
-      background: #fff1ed;
+      border-color: #efb39f;
+      color: var(--critical);
+      background: var(--critical-bg);
+    }
+
+    @media (max-width: 64rem) {
+      .sensor-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
     @media (max-width: 42rem) {
       :host {
-        padding: 1rem;
+        padding: var(--space-md);
+      }
+
+      .app-header {
+        flex-direction: column;
+        padding: var(--space-md);
       }
 
       h1 {
         font-size: 2rem;
       }
 
-      .station-summary {
-        grid-template-columns: 1fr;
+      .station-context {
+        padding: var(--space-md);
       }
 
-      connection-status {
-        grid-column: 1;
-        grid-row: auto;
-        margin-top: 0.5rem;
+      .station-context-grid,
+      .sensor-grid {
+        grid-template-columns: 1fr;
       }
     }
   `;
@@ -229,9 +269,16 @@ export class HydroApp extends LitElement {
 
     return html`
       <main data-cy="app-main">
-        <header>
-          <h1>HydroMonitor Lab</h1>
-          <p>HydroMet Monitoring Dashboard</p>
+        <header class="app-header">
+          <div>
+            <span class="eyebrow">Environmental telemetry</span>
+            <h1>HydroMonitor Lab</h1>
+            <p>HydroMet Monitoring Dashboard</p>
+          </div>
+          <connection-status
+            data-cy="connection-status"
+            .status=${this.connectionStatus}
+          ></connection-status>
         </header>
 
         ${this.renderStationState(selectedStation, selectedStationAlarms)}
@@ -256,15 +303,6 @@ export class HydroApp extends LitElement {
     }
 
     return html`
-      <section class="dashboard-controls" aria-label="Station controls">
-        <station-selector
-          data-cy="station-selector"
-          .stations=${this.stations}
-          .selectedStationId=${this.selectedStationId}
-          @station-selected=${this.handleStationSelected}
-        ></station-selector>
-      </section>
-
       ${selectedStation
         ? this.renderDashboard(selectedStation, selectedStationAlarms)
         : this.renderMessage(
@@ -278,24 +316,31 @@ export class HydroApp extends LitElement {
     selectedStationAlarms: Alarm[],
   ) {
     return html`
-      <section class="station-summary" aria-label="Selected station">
-        <h2 class="station-name">${selectedStation.name}</h2>
-        <p class="station-river">${selectedStation.river}</p>
-        <span class=${`station-status ${selectedStation.status}`}>
-          Status: ${selectedStation.status.toUpperCase()}
-        </span>
-        <connection-status
-          data-cy="connection-status"
-          .status=${this.connectionStatus}
-        ></connection-status>
+      <section class="station-context" aria-label="Selected station">
+        <span class="eyebrow">Station</span>
+        <div class="station-context-grid">
+          <station-selector
+            data-cy="station-selector"
+            .stations=${this.stations}
+            .selectedStationId=${this.selectedStationId}
+            @station-selected=${this.handleStationSelected}
+          ></station-selector>
+          <div class="station-meta">
+            <h2 class="station-name">${selectedStation.name}</h2>
+            <p class="station-river">${selectedStation.river}</p>
+            <span class=${`station-status ${selectedStation.status}`}>
+              ${selectedStation.status.toUpperCase()}
+            </span>
+          </div>
+        </div>
       </section>
 
       ${this.renderMeasurementState()}
+      ${this.renderHistoryState()}
       <alarm-panel
         data-cy="alarm-panel"
         .alarms=${selectedStationAlarms}
       ></alarm-panel>
-      ${this.renderHistoryState()}
     `;
   }
 

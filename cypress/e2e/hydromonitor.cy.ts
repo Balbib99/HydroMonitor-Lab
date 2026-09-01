@@ -152,6 +152,13 @@ describe('HydroMonitor Lab dashboard', () => {
     cy.wait('@latest');
     cy.wait('@history');
 
+    selectStation('VA-002');
+    cy.wait('@latest');
+    cy.wait('@history');
+
+    cy.contains('Pisuerga Centro').should('be.visible');
+    cy.contains('DEGRADED').should('be.visible');
+
     selectStation('VA-003');
     cy.wait('@latest');
     cy.wait('@history');
@@ -323,25 +330,28 @@ describe('HydroMonitor Lab dashboard', () => {
       });
   });
 
-  it('keeps main content available across desktop and mobile viewports', () => {
+  it('keeps main content available across responsive viewports', () => {
     interceptDefaultRest();
-    cy.viewport(1280, 720);
     disableRealtime();
     cy.wait('@latest');
     cy.wait('@history');
 
-    cy.get('[data-cy="app-main"]').should('be.visible');
-    cy.get('[data-cy="station-selector"]').should('be.visible');
-    cy.get('[data-cy="sensor-card-waterLevel"]').should('be.visible');
-    cy.get('[data-cy="measurement-chart"]').should('be.visible');
-    cy.get('[data-cy="alarm-panel"]').should('be.visible');
-
-    cy.viewport('iphone-x');
-    cy.get('[data-cy="app-main"]').should('be.visible');
-    cy.get('[data-cy="station-selector"]').should('be.visible');
-    cy.get('[data-cy="sensor-card-waterLevel"]').should('be.visible');
-    cy.get('[data-cy="measurement-chart"]').should('be.visible');
-    cy.get('[data-cy="alarm-panel"]').should('be.visible');
+    [
+      [1440, 900],
+      [1024, 768],
+      [768, 900],
+      [375, 812],
+    ].forEach(([width, height]) => {
+      cy.viewport(width, height);
+      cy.get('[data-cy="app-main"]').should('be.visible');
+      cy.get('[data-cy="station-selector"]').should('be.visible');
+      cy.get('[data-cy="sensor-card-waterLevel"]').should('be.visible');
+      cy.get('[data-cy="measurement-chart"]').should('be.visible');
+      cy.get('[data-cy="alarm-panel"]').should('be.visible');
+      cy.document().then((document) => {
+        expect(document.documentElement.scrollWidth).to.be.at.most(width);
+      });
+    });
   });
 
   it('changes station through the native select control', () => {

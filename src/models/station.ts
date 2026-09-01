@@ -1,4 +1,4 @@
-export type StationStatus = 'online' | 'warning' | 'offline';
+export type StationStatus = 'operational' | 'degraded' | 'offline';
 
 export interface Station {
   id: string;

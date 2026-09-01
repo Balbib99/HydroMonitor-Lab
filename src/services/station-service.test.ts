@@ -20,7 +20,7 @@ function createStation(overrides: Partial<Station> = {}): Station {
     river: 'R\u00edo Pisuerga',
     latitude: 41.668,
     longitude: -4.728,
-    status: 'online',
+    status: 'operational',
     ...overrides,
   };
 }

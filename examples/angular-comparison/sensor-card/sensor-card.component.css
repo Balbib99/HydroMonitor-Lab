@@ -1,0 +1,50 @@
+.sensor-card {
+  display: grid;
+  min-height: 10.5rem;
+  padding: 1.5rem;
+  border: 1px solid #ccdce2;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 1rem 2.5rem rgb(15 47 63 / 10%);
+}
+
+h2 {
+  margin: 0;
+  color: #5f7079;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reading {
+  align-self: center;
+  margin: 1.5rem 0;
+  color: #15242b;
+  font-size: 2.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.unit {
+  color: #5f7079;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.status {
+  align-self: end;
+  width: fit-content;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  color: #1f6b45;
+  background: #e4f4ec;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.status.warning,
+.sensor-card.warning .status {
+  color: #a15c00;
+  background: #fff1d0;
+}

@@ -39,36 +39,46 @@ export class MeasurementChart extends LitElement {
   static styles = css`
     :host {
       display: block;
-      margin-top: 1.5rem;
+      margin-top: var(--space-lg, 1.5rem);
     }
 
     article {
-      padding: 1.5rem;
-      border: 1px solid #d8e2e7;
-      border-radius: 0.5rem;
-      background: #ffffff;
-      box-shadow: 0 0.75rem 2rem rgb(15 47 63 / 8%);
+      min-width: 0;
+      padding: var(--space-lg, 1.5rem);
+      border: 1px solid var(--border, #ccdce2);
+      border-radius: var(--radius, 0.75rem);
+      background: var(--surface, #ffffff);
+      box-shadow: var(--shadow, 0 1rem 2.5rem rgb(15 47 63 / 10%));
       overflow-wrap: anywhere;
     }
 
     h2 {
       margin: 0;
-      color: #0f2f3f;
-      font-size: 1.25rem;
+      color: var(--text, #15242b);
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
       line-height: 1.2;
+      text-transform: uppercase;
     }
 
     p {
       margin: 0.5rem 0 0;
-      color: #536471;
+      color: var(--text-muted, #5f7079);
       font-size: 0.95rem;
     }
 
     .chart-container {
       position: relative;
+      min-width: 0;
       width: 100%;
-      height: 20rem;
-      margin-top: 1.25rem;
+      height: 21rem;
+      margin-top: var(--space-lg, 1.5rem);
+    }
+
+    canvas {
+      display: block;
+      max-width: 100%;
     }
 
     .sr-only {
@@ -85,7 +95,7 @@ export class MeasurementChart extends LitElement {
 
     @media (max-width: 42rem) {
       article {
-        padding: 1rem;
+        padding: var(--space-md, 1rem);
       }
 
       .chart-container {
@@ -159,11 +169,12 @@ export class MeasurementChart extends LitElement {
         {
           label: `${this.label} (${this.unit})`,
           data: chartData.values,
-          borderColor: '#277da1',
-          backgroundColor: 'rgb(39 125 161 / 12%)',
+          borderColor: '#155f7d',
+          backgroundColor: 'rgb(39 125 161 / 10%)',
           borderWidth: 2,
           fill: true,
           pointRadius: 2,
+          pointHoverRadius: 4,
           tension: 0.3,
         },
       ];
@@ -172,7 +183,7 @@ export class MeasurementChart extends LitElement {
       datasets.push({
         label: `Warning threshold (${this.warningThreshold} ${this.unit})`,
         data: chartData.values.map(() => this.warningThreshold ?? 0),
-        borderColor: '#d97706',
+        borderColor: '#a15c00',
         borderDash: [6, 6],
         borderWidth: 2,
         fill: false,
@@ -190,22 +201,50 @@ export class MeasurementChart extends LitElement {
         animation: false,
         responsive: true,
         maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: {
+              boxWidth: 12,
+              color: '#5f7079',
+              font: {
+                size: 12,
+              },
+            },
+          },
+          tooltip: {
+            backgroundColor: '#0e2a36',
+            titleColor: '#ffffff',
+            bodyColor: '#ffffff',
+            displayColors: true,
+          },
+        },
         interaction: {
           intersect: false,
           mode: 'index',
         },
         scales: {
           x: {
+            grid: {
+              color: 'rgb(204 220 226 / 45%)',
+            },
             ticks: {
+              color: '#5f7079',
               maxRotation: 0,
               autoSkip: true,
               maxTicksLimit: 8,
             },
           },
           y: {
+            grid: {
+              color: 'rgb(204 220 226 / 45%)',
+            },
+            ticks: {
+              color: '#5f7079',
+            },
             title: {
               display: true,
               text: this.unit,
+              color: '#5f7079',
             },
           },
         },

@@ -1,0 +1,15 @@
+<article
+  class="sensor-card"
+  [class.warning]="isWarning()"
+  [attr.aria-label]="label() + ': ' + value() + ' ' + unit() + ', ' + status()"
+>
+  <h2>{{ label() }}</h2>
+
+  <div class="reading">
+    {{ value() }} <span class="unit">{{ unit() }}</span>
+  </div>
+
+  <div class="status">
+    {{ status() }}
+  </div>
+</article>

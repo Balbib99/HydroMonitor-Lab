@@ -1,0 +1,26 @@
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #5f7079;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #ccdce2;
+  border-radius: 0.55rem;
+  background: #ffffff;
+  color: #15242b;
+  font: inherit;
+  font-weight: 600;
+}
+
+select:focus-visible {
+  border-color: #277da1;
+  outline: 3px solid rgb(39 125 161 / 20%);
+}

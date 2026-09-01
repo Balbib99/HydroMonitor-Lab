@@ -1,0 +1,11 @@
+<label for="station-select">Station</label>
+
+<select
+  id="station-select"
+  [value]="selectedStationId()"
+  (change)="handleChange($event)"
+>
+  @for (station of stations(); track station.id) {
+    <option [value]="station.id">{{ station.name }}</option>
+  }
+</select>
